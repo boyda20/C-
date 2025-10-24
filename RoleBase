@@ -1,1 +1,144 @@
+//
+//  main.cpp
+//  RoleBaseAccessControl
+//
+//  Created by Amanda Boyd 
+//
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <algorithm>
+
+// Permission (Enums for clarity)
+enum class Permission {
+    READ,
+    WRITE,
+    DELETE,
+    CREATE,
+    ADMINISTER
+};
+
+std::string permissionToString(Permission p) {
+    switch (p) {
+        case Permission::READ: return "READ";
+        case Permission::WRITE: return "WRITE";
+        case Permission::DELETE: return "DELETE";
+        case Permission::CREATE: return "CREATE";
+        case Permission::ADMINISTER: return "ADMINISTER";
+        default: return "UNKNOWN";
+    }
+}// Role
+class Role {
+private:
+    std::string name;
+    std::vector<Permission> permissions;
+
+public:
+    Role(const std::string& n) : name(n) {}
+
+    void addPermission(Permission p) {
+        if (std::find(permissions.begin(), permissions.end(), p) == permissions.end()) {
+            permissions.push_back(p);
+        }
+    }
+
+    bool hasPermission(Permission p) const {
+        return std::find(permissions.begin(), permissions.end(), p) != permissions.end();
+    }
+
+    const std::string& getName() const { return name; }
+};
+
+// User
+class User {
+private:
+    std::string username;
+    std::vector<Role*> roles; // Using pointers to link to existing roles
+
+public:
+    User(const std::string& u) : username(u) {}
+
+    void addRole(Role* r) {
+        // Prevent adding the same role multiple times
+        if (std::find(roles.begin(), roles.end(), r) == roles.end()) {
+            roles.push_back(r);
+        }
+    }
+
+    const std::string& getUsername() const { return username; }
+    const std::vector<Role*>& getRoles() const { return roles; }
+};
+
+// RBACManager
+class RBACManager {
+public:
+    // Core function: Checks if a user has the required permission
+    bool checkAccess(const User& user, Permission requiredPermission) const {
+        std::cout << "Checking access for User '" << user.getUsername()
+                  << "' for Permission: " << permissionToString(requiredPermission) << std::endl;
+
+        for (Role* role : user.getRoles()) {
+            if (role->hasPermission(requiredPermission)) {
+                std::cout << "  ✅ Granted via Role: " << role->getName() << std::endl;
+                return true;
+            }
+        }
+
+        std::cout << "  ❌ Denied. No assigned role provides this permission." << std::endl;
+        return false;
+    }
+};
+
+int main() {
+    // Define Roles and Permissions ---
+    Role adminRole("Administrator");
+    adminRole.addPermission(Permission::READ);
+    adminRole.addPermission(Permission::WRITE);
+    adminRole.addPermission(Permission::DELETE);
+    adminRole.addPermission(Permission::ADMINISTER);
+
+    Role editorRole("Editor");
+    editorRole.addPermission(Permission::READ);
+    editorRole.addPermission(Permission::WRITE);
+    editorRole.addPermission(Permission::CREATE);
+
+    Role viewerRole("Viewer");
+    viewerRole.addPermission(Permission::READ);
+
+    // Define Users and Assign Roles ---
+    User alice("Alice");
+    alice.addRole(&adminRole); // Alice is an admin
+
+    User bob("Bob");
+    bob.addRole(&viewerRole); // Bob is only a viewer
+    bob.addRole(&editorRole); // Bob is also an editor
+
+    User charlie("Charlie");
+    charlie.addRole(&viewerRole); // Charlie is only a viewer
+
+    // Run Access Checks ---
+    RBACManager manager;
+
+    std::cout << "\n--- Access Checks ---\n";
+
+    // Alice (Admin) checks
+    manager.checkAccess(alice, Permission::DELETE); // Should be granted
+    manager.checkAccess(alice, Permission::ADMINISTER); // Should be granted
+
+    std::cout << "\n";
+
+    // Bob (Editor/Viewer) checks
+    manager.checkAccess(bob, Permission::WRITE); // Should be granted (via Editor)
+    manager.checkAccess(bob, Permission::DELETE); // Should be denied
+
+    std::cout << "\n";
+
+    // Charlie (Viewer) checks
+    manager.checkAccess(charlie, Permission::READ); // Should be granted
+    manager.checkAccess(charlie, Permission::WRITE); // Should be denied
+
+    return 0;
+}
 
