@@ -1,0 +1,38 @@
+/This program will calculate net pay with deductions
+// This program will include variables
+//Amanda Boyd
+
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main()
+{
+    double FedTax=0.15;
+    double StateTax=0.035;
+    double SocSecTax=0.0575;
+    double MedTax=0.0275;
+    double PenPlan=0.05;
+    double HealthInsur=75;
+    
+    double grossamt,netpay;// input and total variable
+    cout<< "Gross amount:";
+    cin >> grossamt;//taking input
+    cout<<endl;
+    
+    cout<< "Bill Robinson "<< endl;
+    cout<< "Gross amount "<<"$"<< setprecision(2)<< fixed << grossamt <<endl;
+    cout<<"Federal Tax " << "$ "<< setprecision(2) << fixed << FedTax * grossamt <<endl;
+    cout<< " State Tax"<< " $ "<< setprecision(2) << fixed << StateTax * grossamt <<endl;
+    cout<< " Social Security Tax" << " $ " << setprecision(2) << SocSecTax * grossamt << endl;
+    cout<< "Medicare/Medicaid Tax" << " $" << setprecision(2) <<MedTax *grossamt << endl;
+    cout << "Pension Plan " << "$ " << setprecision(2) << PenPlan *grossamt << endl;
+    cout << "Health Insurance " << "$ " << HealthInsur << endl;
+    
+// calculate net pay 
+  netpay=grossamt-(FedTax+StateTax+ SocSecTax+MedTax+PenPlan+HealthInsur);
+   
+   return 0;
+}
+    
+
